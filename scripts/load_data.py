@@ -29,7 +29,9 @@ class DataLoader:
     def get_train_test_data(data_pd, ranking_pd):
         # Split the data into training and testing sets based on srch_id
         srch_ids = data_pd['srch_id'].unique()
-        train_srch_ids, test_srch_ids = train_test_split(srch_ids, test_size=0.2, random_state=42)
+        train_srch_ids = [id for id in srch_ids if id % 10 != 1]
+        test_srch_ids = [id for id in srch_ids if id % 10 == 1]
+        # train_srch_ids, test_srch_ids = train_test_split(srch_ids, test_size=0.2, random_state=42)
 
         # Create training and testing DataFrames
         train_data = data_pd[data_pd['srch_id'].isin(train_srch_ids)]
