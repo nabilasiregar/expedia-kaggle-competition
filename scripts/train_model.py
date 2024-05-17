@@ -39,27 +39,27 @@ if __name__ == "__main__":
     config = {
         'objective': 'rank:pairwise',
         'lambdarank_pair_method': 'topk',
-        'lambdarank_num_pair_per_sample': 6,
+        'lambdarank_num_pair_per_sample': 2,
         'eval_metric': 'ndcg',
-        'learning_rate': 0.1,
+        'learning_rate': 0.16331540350491874,
         'max_depth': 10,
-        'subsample': 0.8,
-        'colsample_bytree': 0.8,
+        'subsample': 0.9046315700321794,
+        'colsample_bytree': 0.5898634391239373,
         'seed': 42
     }
-
+    
     # Create DMatrix objects
-    train_dmatrix = create_dmatrix(train_data, 'prop_id', 'srch_id', ['srch_id', 'booking_bool', 'gross_bookings_usd', 'position', 'click_bool'])
-    test_dmatrix = create_dmatrix(test_data, 'prop_id', 'srch_id', ['srch_id', 'booking_bool', 'gross_bookings_usd', 'position', 'click_bool'])
+    train_dmatrix = create_dmatrix(train_data, 'prop_id', 'srch_id', ['srch_id', 'booking_bool', 'gross_bookings_usd', 'position', 'click_bool', 'prop_id', 'date_time', 'orig_destination_distance'])
+    test_dmatrix = create_dmatrix(test_data, 'prop_id', 'srch_id', ['srch_id', 'booking_bool', 'gross_bookings_usd', 'position', 'click_bool', 'prop_id', 'date_time', 'orig_destination_distance'])
     full_dmatrix = xg.DMatrix(
-        features.drop(['booking_bool', 'gross_bookings_usd', 'position', 'click_bool'], axis=1),
+        features.drop(['booking_bool', 'gross_bookings_usd', 'position', 'click_bool', 'prop_id', 'date_time', 'orig_destination_distance'], axis=1),
         label=target,
         group=data['srch_id'].value_counts().sort_index().values
     )
 
     # Training and plotting importance
     trained_model = train_model(train_dmatrix, config, 100)
-    xg.plot_importance(trained_model)
+    # xg.plot_importance(trained_model)
 
     # Evaluate model
     mean_ndcg = predict_and_evaluate(trained_model, test_dmatrix, test_data, ['srch_id', 'prop_id'])
@@ -67,5 +67,5 @@ if __name__ == "__main__":
 
     # Full training and save model
     full_model = train_model(full_dmatrix, config, 100)
-    full_model.save_model('models/model.json')
+    full_model.save_model('models/enginereed_model.json')
 
