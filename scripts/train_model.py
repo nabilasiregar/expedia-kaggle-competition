@@ -39,12 +39,12 @@ if __name__ == "__main__":
     config = {
         'objective': 'rank:pairwise',
         'lambdarank_pair_method': 'topk',
-        'lambdarank_num_pair_per_sample': 2,
+        'lambdarank_num_pair_per_sample': 3,
         'eval_metric': 'ndcg',
-        'learning_rate': 0.16331540350491874,
-        'max_depth': 10,
-        'subsample': 0.9046315700321794,
-        'colsample_bytree': 0.5898634391239373,
+        'learning_rate': 0.013904786971647168,
+        'max_depth': 3,
+        'subsample': 0.920165421462507,
+        'colsample_bytree': 0.7809858505017382,
         'seed': 42
     }
     
@@ -67,5 +67,5 @@ if __name__ == "__main__":
 
     # Full training and save model
     full_model = train_model(full_dmatrix, config, 100)
-    full_model.save_model('models/enginereed_model.json')
+    full_model.save_model('models/tuned_model.json')
 

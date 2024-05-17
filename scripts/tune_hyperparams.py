@@ -31,15 +31,15 @@ def setup_objective(train_data, test_data):
             'lambdarank_num_pair_per_sample': trial.suggest_int('lambdarank_num_pair_per_sample', 2, 10),
             'eval_metric': 'ndcg',
             'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.2),
-            'max_depth': trial.suggest_int('max_depth', 3, 10),
+            'max_depth': trial.suggest_int('max_depth', 3, 20),
             'subsample': trial.suggest_float('subsample', 0.5, 1.0),
             'colsample_bytree': trial.suggest_float('colsample_bytree', 0.5, 1.0),
             'seed': 42
         }
 
-        train_dmatrix = create_dmatrix(train_data, 'prop_id', 'srch_id', ['srch_id', 'booking_bool', 'gross_bookings_usd', 'position', 'click_bool'])
+        train_dmatrix = create_dmatrix(train_data, 'prop_id', 'srch_id', ['srch_id', 'booking_bool', 'gross_bookings_usd', 'position', 'click_bool', 'prop_id', 'date_time', 'orig_destination_distance'])
         model = train_model(train_dmatrix, param, 100)
-        test_dmatrix = create_dmatrix(test_data, 'prop_id', 'srch_id', ['srch_id', 'booking_bool', 'gross_bookings_usd', 'position', 'click_bool'])
+        test_dmatrix = create_dmatrix(test_data, 'prop_id', 'srch_id', ['srch_id', 'booking_bool', 'gross_bookings_usd', 'position', 'click_bool', 'prop_id', 'date_time', 'orig_destination_distance'])
         mean_ndcg = predict_and_evaluate(model, test_dmatrix, test_data, ['srch_id', 'prop_id'])
 
         trial_results = {

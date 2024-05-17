@@ -4,9 +4,10 @@ import polars as pl
 import pandas as pd
 import numpy as np
 from sklearn.metrics import ndcg_score
+import pdb
 
 model = xg.Booster()
-model.load_model('models/enginereed_model.json')
+model.load_model('models/fixed_model.json')
 
 test_set = pl.read_csv('../data/preprocessed/engineered_test_set.csv')
 test_set = test_set.to_pandas()
@@ -20,4 +21,4 @@ test_set['pred'] = model.predict(test_set_dmatrix)
 
 # same as earlier, without need for calculating the ndcg, so less steps
 submission = test_set.sort_values(['srch_id', 'pred'], ascending=[True, False])[['srch_id', 'prop_id']]
-submission.to_csv('../data/submit/submission.csv', index=False)
+submission.to_csv('../data/submit/new_submission.csv', index=False)
