@@ -3,6 +3,7 @@ import xgboost as xg
 from sklearn.metrics import ndcg_score
 from load_data import DataLoader
 import matplotlib.pyplot as plt
+import numpy as np
 import pdb
 
 def create_dmatrix(data, label_column, group_column, drop_columns):
@@ -14,20 +15,42 @@ def create_dmatrix(data, label_column, group_column, drop_columns):
 def train_model(dmatrix, params, num_rounds):
     return xg.train(params, dmatrix, num_boost_round=num_rounds)
 
-def predict_and_evaluate(model, dmatrix, t_data, true_order_columns):
+def dcg_at_k(r, k, method=1):
+    r = np.asfarray(r)[:k]
+    if r.size:
+        if method == 1:
+            return r[0] + np.sum(r[1:] / np.log2(np.arange(2, r.size + 1)))
+        else:
+            return np.sum(r / np.log2(np.arange(2, r.size + 2)))
+    return 0.
+
+def ndcg_at_k(r, k, method=1):
+    dcg_max = dcg_at_k(sorted(r, reverse=True), k, method)
+    if not dcg_max:
+        return 0.
+    return dcg_at_k(r, k, method) / dcg_max
+
+def calculate_grades(data):
+    data['grade'] = np.where(data['booking_bool'] == 1, 5,
+                             np.where(data['click_bool'] == 1, 1, 0))
+    return data
+
+def predict_and_evaluate(model, dmatrix, t_data):
     test_pred = model.predict(dmatrix)
     results_data = t_data.copy()
     results_data['pred'] = test_pred
 
-    ordered_results = results_data.sort_values(['srch_id', 'pred'], ascending=[True, False])
-    grouped = ordered_results.groupby('srch_id')['prop_id'].apply(list).reset_index()
-    true_order = t_data[true_order_columns]
+    # Assign grades based on booking and clicking
+    results_data = calculate_grades(results_data)
 
-    grouped['true'] = true_order.groupby('srch_id')['prop_id'].apply(list).reset_index()['prop_id']
-    grouped['ndcg'] = grouped.apply(
-        lambda x: ndcg_score([x['true']], [x['prop_id']], k=5) if len(x['true']) > 1 else None, axis=1
-    )
-    return grouped['ndcg'].mean()
+    # Sort predictions with highest probability first
+    ordered_results = results_data.sort_values(['srch_id', 'pred'], ascending=[True, False])
+    grouped = ordered_results.groupby('srch_id')['grade'].apply(list).reset_index()
+
+    ndcg_scores = grouped['grade'].apply(lambda grades: ndcg_at_k(grades, 5))
+    mean_ndcg = ndcg_scores.mean()
+    
+    return mean_ndcg
 
 if __name__ == "__main__":
     # Load and prepare data
@@ -62,10 +85,10 @@ if __name__ == "__main__":
     # xg.plot_importance(trained_model)
 
     # Evaluate model
-    mean_ndcg = predict_and_evaluate(trained_model, test_dmatrix, test_data, ['srch_id', 'prop_id'])
+    mean_ndcg = predict_and_evaluate(trained_model, test_dmatrix, test_data)
     print(f'mean_ndcg: {mean_ndcg}')
 
     # Full training and save model
     full_model = train_model(full_dmatrix, config, 100)
-    full_model.save_model('models/tuned_model.json')
+    full_model.save_model('models/model.json')
 
