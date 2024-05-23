@@ -7,7 +7,7 @@ data = pd.read_csv('../data/preprocessed/engineered_train_set.csv')
 
 data['relevance_grade'] = 5 * data['booking_bool'] + 1 * (data['click_bool'] & ~data['booking_bool'])
 
-features = [col for col in data.columns if col not in ['srch_id', 'prop_id', 'booking_bool', 'click_bool', 'gross_bookings_usd', 'position', 'relevance_grade', 'date_time', 'orig_destination_distance']]
+features = [col for col in data.columns if col not in ['srch_id', 'prop_id', 'booking_bool', 'click_bool', 'gross_bookings_usd', 'position', 'relevance_grade', 'orig_destination_distance', 'date_time']]
 
 # Split data into training and validation sets based on srch_id % 10
 train_data = data[data['srch_id'] % 10 != 1]
@@ -71,6 +71,6 @@ def calculate_ndcg(df, k=5):
 ndcg_value = calculate_ndcg(sorted_valid_data, k=5)
 print(f"NDCG@5 for the validation set: {ndcg_value}")
 
-# bst = xgb.train(config, full_dmat, num_boost_round, evals=[(full_dmat, 'train')], early_stopping_rounds=10)
+bst = xgb.train(config, full_dmat, num_boost_round, evals=[(full_dmat, 'train')], early_stopping_rounds=10)
 
 bst.save_model('models/final_model.json')

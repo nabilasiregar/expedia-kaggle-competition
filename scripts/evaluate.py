@@ -12,7 +12,6 @@ trained_model.load_model('models/final_model.json')
 
 # predict relevance scores using the trained model
 test_data['predicted_relevance'] = trained_model.predict(dmatrix_test)
-print(test_data['predicted_relevance'])
 
 # the highest predicted relevance properties are listed first for each search
 sorted_test_data = test_data.sort_values(by=['srch_id', 'predicted_relevance'], ascending=[True, False])
