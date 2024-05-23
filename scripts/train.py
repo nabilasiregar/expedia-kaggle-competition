@@ -2,31 +2,7 @@ import pandas as pd
 import xgboost as xgb
 from sklearn.metrics import ndcg_score
 import numpy as np
-import matplotlib.pyplot as plt
 
-plt.rcParams.update({
-    "font.family": "serif",
-    "font.size": 20,
-    "axes.titlesize": 26,
-    "axes.labelsize": 22,
-    "xtick.labelsize": 18,
-    "ytick.labelsize": 18,
-    "legend.fontsize": 18,
-    "figure.figsize": (8, 6),
-    "figure.dpi": 100,
-    "savefig.dpi": 200,
-    "savefig.format": "png",
-    "savefig.transparent": True,
-    "axes.grid": True,
-    "grid.linewidth": 0.5,
-    "grid.linestyle": "--",
-    "grid.color": "0.8",
-    "image.cmap": "Blues",
-    "lines.linewidth": 1.5,
-    "lines.markersize": 6,
-    "text.usetex": True, "mathtext.fontset": "cm",
-    "pgf.preamble": r"\usepackage[utf8]{inputenc}\usepackage[T1]{fontenc}\usepackage{cmbright}"
-})
 data = pd.read_csv('../data/preprocessed/engineered_train_set.csv')
 
 data['relevance_grade'] = 5 * data['booking_bool'] + 1 * (data['click_bool'] & ~data['booking_bool'])
@@ -65,8 +41,6 @@ config = {
 # Train the model
 num_boost_round = 130
 bst = xgb.train(config, dtrain, num_boost_round, evals=[(dvalid, 'validate')], early_stopping_rounds=10)
-xgb.plot_importance(bst)
-plt.show()
 
 # Predict relevance scores on the validation set
 valid_data['predicted_relevance'] = bst.predict(dvalid)
